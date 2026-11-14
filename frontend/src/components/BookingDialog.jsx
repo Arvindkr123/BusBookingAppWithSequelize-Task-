@@ -1,13 +1,16 @@
-import { ArrowRight, Check, LockKeyhole, X } from "lucide-react";
+import { ArrowRight, Check, LockKeyhole, ShieldCheck, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import Alert from "./Alert";
+import { openRazorpayCheckout } from "../utils/razorpay";
 
-export default function BookingDialog({ bus, bookings, user, onClose, onBooked }) {
+export default function BookingDialog({ bus, bookings, user, onClose }) {
+  const navigate = useNavigate();
   const [seatNumber, setSeatNumber] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [fare, setFare] = useState(null);
   const occupiedSeats = useMemo(
     () =>
       new Set(
@@ -33,16 +36,50 @@ export default function BookingDialog({ bus, bookings, user, onClose, onBooked }
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
+  useEffect(() => {
+    let active = true;
+    api.payments.fare()
+      .then((result) => {
+        if (active) setFare(result);
+      })
+      .catch((requestError) => {
+        if (active) setError(requestError.message);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
     setSubmitting(true);
     try {
-      await api.bookings.create({
+      const checkout = await api.payments.checkout({
         busId: bus.id,
         seatNumber: Number(seatNumber),
       });
-      await onBooked({ bus, seatNumber: Number(seatNumber), name: user.name });
+      if (checkout.paid || checkout.processing) {
+        navigate(`/payment/return?order_id=${encodeURIComponent(checkout.orderId)}`);
+        return;
+      }
+      await openRazorpayCheckout({
+        order: checkout,
+        user,
+        onSuccess: async (response) => {
+          let verificationFailed = false;
+          try {
+            await api.payments.verify(response);
+          } catch {
+            verificationFailed = true;
+          }
+          navigate(
+            `/payment/return?order_id=${encodeURIComponent(checkout.orderId)}${verificationFailed ? "&verification_error=1" : ""}`,
+          );
+        },
+        onFailure: (message) => setError(message),
+        onDismiss: () => setSubmitting(false),
+      });
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -86,43 +123,61 @@ export default function BookingDialog({ bus, bookings, user, onClose, onBooked }
         </div>
 
         {user ? (
-          <form className="mt-7 space-y-4" onSubmit={handleSubmit}>
+          <div className="mt-7">
             <p className="text-sm text-slate-500">
               Booking as <span className="font-semibold text-ink">{user.name}</span>
             </p>
-            <label className="block">
-              <span className="mb-1.5 block text-sm font-medium text-slate-700">
-                Choose an available seat
-              </span>
-              <select
-                className="form-input"
-                onChange={(event) => setSeatNumber(event.target.value)}
-                required
-                value={seatNumber}
-              >
-                <option value="">Select a seat</option>
-                {availableSeats.map((seat) => (
-                  <option key={seat} value={seat}>
-                    Seat {seat}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {availableSeats.length === 0 && (
-              <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                No seats are currently available on this bus.
+            <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Choose an available seat
+                </span>
+                <select
+                  className="form-input"
+                  onChange={(event) => setSeatNumber(event.target.value)}
+                  required
+                  value={seatNumber}
+                >
+                  <option value="">Select a seat</option>
+                  {availableSeats.map((seat) => (
+                    <option key={seat} value={seat}>
+                      Seat {seat}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {availableSeats.length === 0 && (
+                <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  No seats are currently available on this bus.
+                </p>
+              )}
+              <div className="flex items-center justify-between rounded-xl bg-[#f5f6f1] px-4 py-3">
+                <span className="text-sm text-slate-600">Price per seat</span>
+                <span className="font-semibold text-ink">
+                  {fare
+                    ? new Intl.NumberFormat("en-IN", {
+                      style: "currency",
+                      currency: fare.currency,
+                      maximumFractionDigits: 0,
+                    }).format(fare.amount)
+                    : "Loading…"}
+                </span>
+              </div>
+              <p className="flex items-center gap-2 text-xs leading-5 text-slate-500">
+                <ShieldCheck aria-hidden="true" className="h-4 w-4 shrink-0 text-forest" />
+                Pay securely with the payment methods enabled on your Razorpay account.
               </p>
-            )}
-            <Alert>{error}</Alert>
-            <button
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-forest px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-forest-dark disabled:cursor-not-allowed disabled:opacity-55"
-              disabled={submitting || availableSeats.length === 0}
-              type="submit"
-            >
-              {submitting ? "Reserving your seat…" : "Confirm reservation"}
-              {!submitting && <Check aria-hidden="true" className="h-4 w-4" />}
-            </button>
-          </form>
+              <Alert>{error}</Alert>
+              <button
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-forest px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-forest-dark disabled:cursor-not-allowed disabled:opacity-55"
+                disabled={submitting || !fare || availableSeats.length === 0}
+                type="submit"
+              >
+                {submitting ? "Opening secure checkout…" : "Reserve & pay"}
+                {!submitting && <Check aria-hidden="true" className="h-4 w-4" />}
+              </button>
+            </form>
+          </div>
         ) : (
           <div className="mt-6 rounded-2xl bg-[#f5f6f1] p-5">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-forest">

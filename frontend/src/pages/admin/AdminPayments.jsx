@@ -53,7 +53,7 @@ export default function AdminPayments() {
   return (
     <div className="space-y-7">
       <PageHeading
-        description="Payment records created by the booking API."
+        description="Razorpay payment records synchronized through verified callbacks and webhooks."
         eyebrow="Transactions"
         title="Payments"
       />
@@ -138,7 +138,7 @@ export default function AdminPayments() {
             </div>
           )}
           <p className="text-xs leading-5 text-slate-400">
-            Payment statuses and amounts are read from the API. This application does not currently connect to a payment provider.
+            Payments are confirmed only after the backend verifies the Razorpay payment signature or webhook.
           </p>
         </>
       ) : null}

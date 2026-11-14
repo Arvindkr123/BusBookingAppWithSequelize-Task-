@@ -41,7 +41,7 @@ export default function AdminBookings() {
   return (
     <div className="space-y-7">
       <PageHeading
-        description="Review seat reservations across your fleet."
+        description="Review reservations and whether each seat is confirmed or awaiting payment."
         eyebrow="Reservations"
         title="Bookings"
       />
@@ -62,6 +62,7 @@ export default function AdminBookings() {
                   <th className="px-5 py-3.5 font-semibold">Passenger</th>
                   <th className="px-5 py-3.5 font-semibold">Bus</th>
                   <th className="px-5 py-3.5 font-semibold">Seat</th>
+                  <th className="px-5 py-3.5 font-semibold">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
@@ -80,6 +81,17 @@ export default function AdminBookings() {
                       {busById.get(Number(booking.busId))?.busNumber || `Bus ${booking.busId}`}
                     </td>
                     <td className="px-5 py-4">{booking.seatNumber}</td>
+                    <td className="px-5 py-4">
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        booking.status === "CONFIRMED"
+                          ? "bg-[#eff4eb] text-forest"
+                          : booking.status === "CANCELLED"
+                            ? "bg-stone-100 text-slate-500"
+                            : "bg-amber-50 text-amber-700"
+                      }`}>
+                        {booking.status || "CONFIRMED"}
+                      </span>
+                    </td>
                   </tr>
                 ))}
               </tbody>

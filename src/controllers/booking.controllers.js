@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const { sequelize } = require("../utils/db");
 const { BookingModel } = require("../models/bookings.models");
 const { BusModel } = require("../models/buses.models");
@@ -44,7 +45,7 @@ module.exports = {
             }
 
             const createdBooking = await BookingModel.create(
-                { userId, busId, seatNumber },
+                { userId, busId, seatNumber, status: "PENDING_PAYMENT" },
                 { transaction }
             );
             await bus.update(
@@ -73,6 +74,7 @@ module.exports = {
     listOccupiedSeats: asyncHandler(async (req, res) => {
         const bookings = await BookingModel.findAll({
             attributes: ["busId", "seatNumber"],
+            where: { status: { [Op.ne]: "CANCELLED" } },
             order: [["seatNumber", "ASC"]],
         });
         res.json(bookings);
@@ -135,15 +137,16 @@ module.exports = {
                 throw new HttpError(404, "Bus not found");
             }
             validateSeatNumber(seatNumber, newBus);
-            if (busId !== oldBusId && newBus.availableSeats < 1) {
+            const holdsSeat = booking.status !== "CANCELLED";
+            if (holdsSeat && busId !== oldBusId && newBus.availableSeats < 1) {
                 throw new HttpError(409, "The bus has no available seats");
             }
-            if (busId !== oldBusId && oldBus.availableSeats >= oldBus.totalSeats) {
+            if (holdsSeat && busId !== oldBusId && oldBus.availableSeats >= oldBus.totalSeats) {
                 throw new HttpError(409, "Bus seat availability is inconsistent");
             }
 
             await booking.update({ userId, busId, seatNumber }, { transaction });
-            if (busId !== oldBusId) {
+            if (holdsSeat && busId !== oldBusId) {
                 await oldBus.update(
                     { availableSeats: oldBus.availableSeats + 1 },
                     { transaction }
@@ -177,15 +180,17 @@ module.exports = {
             if (!bus) {
                 throw new HttpError(404, "Bus not found");
             }
-            if (bus.availableSeats >= bus.totalSeats) {
-                throw new HttpError(409, "Bus seat availability is inconsistent");
+            if (booking.status !== "CANCELLED") {
+                if (bus.availableSeats >= bus.totalSeats) {
+                    throw new HttpError(409, "Bus seat availability is inconsistent");
+                }
+                await bus.update(
+                    { availableSeats: bus.availableSeats + 1 },
+                    { transaction }
+                );
             }
 
             await booking.destroy({ transaction });
-            await bus.update(
-                { availableSeats: bus.availableSeats + 1 },
-                { transaction }
-            );
         });
         res.status(204).end();
     }),

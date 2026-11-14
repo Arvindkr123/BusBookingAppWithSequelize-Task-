@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import AuthPage from "./pages/AuthPage";
 import HomePage from "./pages/HomePage";
 import MyBookingsPage from "./pages/MyBookingsPage";
+import PaymentReturnPage from "./pages/PaymentReturnPage";
 import AdminBookings from "./pages/admin/AdminBookings";
 import AdminBuses from "./pages/admin/AdminBuses";
 import AdminOverview from "./pages/admin/AdminOverview";
@@ -24,6 +25,14 @@ function AppRoutes() {
       <Route element={<HomePage />} path="/" />
       <Route element={<AuthPage mode="login" />} path="/login" />
       <Route element={<AuthPage mode="signup" />} path="/signup" />
+      <Route
+        element={
+          <RequireAuth>
+            <PaymentReturnPage />
+          </RequireAuth>
+        }
+        path="/payment/return"
+      />
       <Route
         element={
           <RequireAuth>

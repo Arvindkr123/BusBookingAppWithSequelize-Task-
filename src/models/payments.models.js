@@ -29,6 +29,16 @@ const PaymentModel = sequelize.define("Payments", {
             key: "id",
         },
     },
+    razorpayOrderId: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        unique: true,
+    },
+    razorpayPaymentId: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        unique: true,
+    },
 }, {
     tableName: "Payments",
     timestamps: false,

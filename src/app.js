@@ -10,6 +10,8 @@ const usersRoutes = require('./routes/users.routes');
 const busesRoutes = require('./routes/buses.routes');
 const bookingsRoutes = require('./routes/booking.routes');
 const paymentsRoutes = require('./routes/payments.routes');
+const razorpayController = require('./controllers/razorpay.controllers');
+const { ensurePaymentSchema } = require('./utils/payment-schema');
 const { errorHandler } = require('./controllers/controller.utils');
 require('./models/users.models');
 require('./models/buses.models');
@@ -21,8 +23,13 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.json());
 app.use(cookieParser());
+app.post(
+    '/api/payments/webhook',
+    express.raw({ type: 'application/json' }),
+    razorpayController.webhook,
+);
+app.use(express.json());
 
 app.use('/api/users', usersRoutes);
 app.use('/api/buses', busesRoutes);
@@ -45,6 +52,7 @@ async function startServer() {
 
     await sequelize.sync({ force: false });
     await ensureAuthSchema(sequelize);
+    await ensurePaymentSchema(sequelize);
     await ensureBootstrapAdmin();
 
     app.listen(port, () => {

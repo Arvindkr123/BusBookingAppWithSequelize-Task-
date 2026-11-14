@@ -28,6 +28,11 @@ const BookingModel = sequelize.define("Bookings", {
             key: "id",
         },
     },
+    status: {
+        type: DataTypes.ENUM("PENDING_PAYMENT", "CONFIRMED", "CANCELLED"),
+        allowNull: false,
+        defaultValue: "CONFIRMED",
+    },
 }, {
     tableName: "Bookings",
     timestamps: false,

@@ -136,7 +136,6 @@ export default function HomePage() {
   const [selectedBus, setSelectedBus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [confirmation, setConfirmation] = useState(null);
 
   async function loadBuses() {
     setError("");
@@ -181,12 +180,6 @@ export default function HomePage() {
     0,
   );
 
-  async function handleBooked(details) {
-    setSelectedBus(null);
-    setConfirmation(details);
-    await loadBuses();
-  }
-
   return (
     <div className="min-h-screen bg-cream">
       <SiteHeader />
@@ -221,16 +214,6 @@ export default function HomePage() {
               </label>
             </div>
 
-            {confirmation && (
-              <div
-                aria-live="polite"
-                className="mt-7 rounded-2xl border border-leaf/20 bg-white px-5 py-4"
-              >
-                <p className="font-semibold text-ink">
-                  Seat {confirmation.seatNumber} on bus {confirmation.bus.busNumber} is reserved for {confirmation.name}.
-                </p>
-              </div>
-            )}
             {error && <div className="mt-7"><Alert onRetry={loadBuses}>{error}</Alert></div>}
 
             {loading ? (
@@ -309,7 +292,6 @@ export default function HomePage() {
         <BookingDialog
           bus={selectedBus}
           bookings={bookings}
-          onBooked={handleBooked}
           onClose={() => setSelectedBus(null)}
           user={user}
         />

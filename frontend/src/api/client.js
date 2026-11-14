@@ -70,5 +70,19 @@ export const api = {
   },
   payments: {
     list: () => request("/payments"),
+    fare: () => request("/payments/fare"),
+    mine: () => request("/payments/mine"),
+    checkout: (details) =>
+      request("/payments/checkout", {
+        method: "POST",
+        body: JSON.stringify(details),
+      }),
+    verify: (paymentDetails) =>
+      request("/payments/verify", {
+        method: "POST",
+        body: JSON.stringify(paymentDetails),
+      }),
+    order: (orderId) =>
+      request(`/payments/order/${encodeURIComponent(orderId)}`),
   },
 };
