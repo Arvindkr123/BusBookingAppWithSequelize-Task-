@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "collections": [
+    {
+      "id": "4499de40-3a30-4bc1-b594-e3fe2118ffc6",
+      "name": "users",
+      "requests": [
+        {
+          "id": "c22015a5-9a86-4ff5-b51f-cc71a4468226",
+          "name": "add user",
+          "method": "POST",
+          "url": "http://localhost:3000/api/users",
+          "query": [],
+          "headers": [],
+          "body": {
+            "mode": "form",
+            "raw": "",
+            "rawContentType": "text/plain",
+            "form": [
+              {
+                "id": "cd43f746-d75c-411e-b2db-400bf1e6bddd",
+                "key": "name",
+                "value": "Arjun thakur",
+                "enabled": true
+              },
+              {
+                "id": "cef0af2f-feb7-47ce-8135-d45d0ec6ccc7",
+                "key": "email",
+                "value": "arjun.thakur@gmail.com",
+                "enabled": true
+              }
+            ],
+            "multipart": []
+          },
+          "auth": {
+            "type": "none",
+            "bearer": "",
+            "basicUser": "",
+            "basicPass": "",
+            "apiKeyName": "",
+            "apiKeyValue": "",
+            "apiKeyIn": "header"
+          },
+          "assertions": [],
+          "insecureSkipVerify": false
+        },
+        {
+          "id": "288c3aab-bf61-490e-916c-b2b0ea6c67b6",
+          "name": "get user",
+          "method": "GET",
+          "url": "http://localhost:3000/api/users",
+          "query": [],
+          "headers": [],
+          "body": {
+            "mode": "none",
+            "raw": "",
+            "rawContentType": "text/plain",
+            "form": [
+              {
+                "id": "5548e63f-5473-4a7e-a857-d6a6879150b5",
+                "key": "name",
+                "value": "Arvind",
+                "enabled": true
+              },
+              {
+                "id": "b95152a0-c3cf-4028-94ce-8d13f388dcc6",
+                "key": "email",
+                "value": "arvind@gmail.com",
+                "enabled": true
+              }
+            ],
+            "multipart": []
+          },
+          "auth": {
+            "type": "none",
+            "bearer": "",
+            "basicUser": "",
+            "basicPass": "",
+            "apiKeyName": "",
+            "apiKeyValue": "",
+            "apiKeyIn": "header"
+          },
+          "assertions": [],
+          "insecureSkipVerify": false
+        }
+      ],
+      "folders": []
+    }
+  ]
+}
