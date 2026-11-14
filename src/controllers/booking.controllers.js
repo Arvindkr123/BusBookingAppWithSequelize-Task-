@@ -21,7 +21,7 @@ function validateSeatNumber(seatNumber, bus) {
 module.exports = {
     create: asyncHandler(async (req, res) => {
         const body = getBody(req);
-        const userId = getId(body.userId, "userId");
+        const userId = req.auth.userId;
         const busId = getId(body.busId, "busId");
         const seatNumber = getId(body.seatNumber, "seatNumber");
 
@@ -62,10 +62,29 @@ module.exports = {
         res.json(bookings);
     }),
 
+    listMine: asyncHandler(async (req, res) => {
+        const bookings = await BookingModel.findAll({
+            where: { userId: req.auth.userId },
+            order: [["id", "ASC"]],
+        });
+        res.json(bookings);
+    }),
+
+    listOccupiedSeats: asyncHandler(async (req, res) => {
+        const bookings = await BookingModel.findAll({
+            attributes: ["busId", "seatNumber"],
+            order: [["seatNumber", "ASC"]],
+        });
+        res.json(bookings);
+    }),
+
     get: asyncHandler(async (req, res) => {
         const booking = await BookingModel.findByPk(getId(req.params.id));
         if (!booking) {
             throw new HttpError(404, "Booking not found");
+        }
+        if (req.auth.role !== "ADMIN" && booking.userId !== req.auth.userId) {
+            throw new HttpError(403, "You cannot view this booking");
         }
         res.json(booking);
     }),

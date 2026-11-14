@@ -17,6 +17,18 @@ const UserModel = sequelize.define("Users", {
         allowNull: false,
         unique: true,
     },
+    passwordHash: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+    },
+    role: {
+        type: DataTypes.STRING(20),
+        allowNull: false,
+        defaultValue: "USER",
+        validate: {
+            isIn: [["USER", "ADMIN"]],
+        },
+    },
 }, {
     tableName: "Users",
     timestamps: false,

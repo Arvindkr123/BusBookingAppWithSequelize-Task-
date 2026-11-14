@@ -1,14 +1,15 @@
 const router = require("express").Router();
 const busesController = require("../controllers/buses.controllers");
+const { requireAuth, requireAdmin } = require("../middleware/auth.middleware");
 
 router.route("/")
-    .post(busesController.create)
+    .post(requireAuth, requireAdmin, busesController.create)
     .get(busesController.list);
 
 router.route("/:id")
     .get(busesController.get)
-    .put(busesController.update)
-    .patch(busesController.update)
-    .delete(busesController.remove);
+    .put(requireAuth, requireAdmin, busesController.update)
+    .patch(requireAuth, requireAdmin, busesController.update)
+    .delete(requireAuth, requireAdmin, busesController.remove);
 
 module.exports = router;

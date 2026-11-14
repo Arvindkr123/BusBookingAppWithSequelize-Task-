@@ -1,0 +1,73 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #f8f8f4;
+  --color-forest: #285d46;
+  --color-forest-dark: #214b39;
+  --color-leaf: #78a76c;
+  --color-ink: #202a25;
+  --font-sans: "DM Sans", sans-serif;
+  --font-display: "Manrope", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--color-cream);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgb(120 167 108 / 50%);
+  outline-offset: 2px;
+}
+
+.form-input {
+  display: block;
+  width: 100%;
+  border: 1px solid #e7e5df;
+  border-radius: 0.8rem;
+  background: #fff;
+  padding: 0.75rem 0.9rem;
+  color: var(--color-ink);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.form-input--icon {
+  padding-left: 2.75rem;
+}
+
+.form-input::placeholder {
+  color: #a1a1aa;
+}
+
+.form-input:focus {
+  border-color: var(--color-leaf);
+  box-shadow: 0 0 0 3px rgb(120 167 108 / 16%);
+}
